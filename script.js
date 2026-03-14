@@ -58,6 +58,25 @@ function resize() {
     x = (boxW - tagW) * 0.25 + Math.random() * ((boxW - tagW) * 0.5);
     y = (boxH - tagH) * 0.25 + Math.random() * ((boxH - tagH) * 0.5);
   }
+
+  if (Math.floor(Math.random() * CORNER_HIT_CHANCE_DENOMINATOR) !== 0) {
+    return;
+  }
+
+  celebrationActive = true;
+  celebrationGif.src = CELEBRATION_GIF_URL;
+  cornerCelebration.hidden = false;
+
+  celebrationAudio.currentTime = 0;
+  celebrationAudio.play().catch(() => {
+    // Browser autoplay may be blocked until interaction.
+  });
+
+  clearTimeout(triggerCornerCelebration.hideTimer);
+  triggerCornerCelebration.hideTimer = setTimeout(() => {
+    cornerCelebration.hidden = true;
+    celebrationActive = false;
+  }, CELEBRATION_DURATION_MS);
 }
 
 function triggerCornerCelebration() {
