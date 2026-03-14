@@ -16,7 +16,7 @@ const CELEBRATION_DURATION_MS = 2200;
 
 // Audio skeleton (disabled by default until you add your real file)
 const ENABLE_CORNER_AUDIO = false;
-const SONG_URL = ''; // Example: './my-song.mp3'
+const SONG_URL = ''; // Example: './C2C283A5-B1D0-4079-B662-5FEA422BEBEE.mp3'
 
 let boxW = 0;
 let boxH = 0;
