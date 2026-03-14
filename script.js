@@ -5,10 +5,18 @@ const cornerCelebration = document.getElementById('corner-celebration');
 const celebrationGif = document.getElementById('celebration-gif');
 
 // ===== Celebration configuration =====
-const CORNER_HIT_CHANCE_DENOMINATOR = 50; // 1 in 50
+// GIF always shows on corner hits by default.
+// If you ever want random chance again, set SHOW_ON_EVERY_CORNER_HIT = false
+// and lower CORNER_HIT_CHANCE_DENOMINATOR for more frequent triggers.
+const SHOW_ON_EVERY_CORNER_HIT = true;
+const CORNER_HIT_CHANCE_DENOMINATOR = 5; // used only when SHOW_ON_EVERY_CORNER_HIT is false (1 in N)
+
 const CELEBRATION_GIF_URL = 'celebration.gif';
-const SONG_URL = 'celebration.mp3';
-const CELEBRATION_DURATION_MS = 6000;
+const CELEBRATION_DURATION_MS = 2200;
+
+// Audio skeleton (disabled by default until you add your real file)
+const ENABLE_CORNER_AUDIO = false;
+const SONG_URL = ''; // Example: './C2C283A5-B1D0-4079-B662-5FEA422BEBEE.mp3'
 
 let boxW = 0;
 let boxH = 0;
@@ -27,8 +35,16 @@ vy *= Math.random() * 0.6 + 0.7;
 // clamp max speed
 const MAX_SPEED = 1300;
 
-const celebrationAudio = new Audio(SONG_URL);
+const celebrationAudio = ENABLE_CORNER_AUDIO && SONG_URL ? new Audio(SONG_URL) : null;
 let celebrationActive = false;
+
+function shouldTriggerCelebration() {
+  if (SHOW_ON_EVERY_CORNER_HIT) {
+    return true;
+  }
+
+  return Math.floor(Math.random() * CORNER_HIT_CHANCE_DENOMINATOR) === 0;
+}
 
 function resize() {
   const r = box.getBoundingClientRect();
@@ -41,12 +57,6 @@ function resize() {
   if (x + tagW > boxW || y + tagH > boxH) {
     x = (boxW - tagW) * 0.25 + Math.random() * ((boxW - tagW) * 0.5);
     y = (boxH - tagH) * 0.25 + Math.random() * ((boxH - tagH) * 0.5);
-  }
-}
-
-function triggerCornerCelebration() {
-  if (celebrationActive) {
-    return;
   }
 
   if (Math.floor(Math.random() * CORNER_HIT_CHANCE_DENOMINATOR) !== 0) {
@@ -61,6 +71,30 @@ function triggerCornerCelebration() {
   celebrationAudio.play().catch(() => {
     // Browser autoplay may be blocked until interaction.
   });
+
+  clearTimeout(triggerCornerCelebration.hideTimer);
+  triggerCornerCelebration.hideTimer = setTimeout(() => {
+    cornerCelebration.hidden = true;
+    celebrationActive = false;
+  }, CELEBRATION_DURATION_MS);
+}
+
+function triggerCornerCelebration() {
+  // keep current celebration visible for its full duration
+  if (celebrationActive || !shouldTriggerCelebration()) {
+    return;
+  }
+
+  celebrationActive = true;
+  celebrationGif.src = CELEBRATION_GIF_URL;
+  cornerCelebration.hidden = false;
+
+  if (celebrationAudio) {
+    celebrationAudio.currentTime = 0;
+    celebrationAudio.play().catch(() => {
+      // Browser autoplay may be blocked until interaction.
+    });
+  }
 
   clearTimeout(triggerCornerCelebration.hideTimer);
   triggerCornerCelebration.hideTimer = setTimeout(() => {
